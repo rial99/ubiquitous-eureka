@@ -1,0 +1,10 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+  {% if session.logged_in %}
+  <h1>Dashboard <small>Welcome {{ session.username }}</small></h1>
+  {% else %}
+  <h1>Dashboard <small>Welcome please login</small></h1>
+
+  {% endif %}
+{% endblock %}
