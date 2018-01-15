@@ -17,10 +17,11 @@
          </ul>
 
          <ul class="nav navbar-nav navbar-right">
-           <li><a href="/register">Register</a></li>
            {% if session.logged_in %}
+           <li><a href="/dashboard">DASHBOARD</a></li>
            <li><a href="/logout">LOGOUT</a></li>
            {% else %}
+           <li><a href="/register">Register</a></li>
            <li><a href="/login">LOGIN</a></li>
            {% endif %}
          </ul>
