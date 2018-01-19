@@ -5,15 +5,15 @@
 <h1>Add Article</h1>
 
 {% from "includes/_formhelpers.html" import render_field %}
-<form action="" method="POST">
-  <div class="form-group">
-    {{ render_field(form.title, class="form-control") }}
-  </div>
-  <div class="form-group">
-    {{ render_field(form.body, class="form-control", id="editor") }}
-  </div>
-  <p><input class="btn btn-primary" type="submit" value="Submit"></p>
-
-</form>
+    <form method="post">
+			{{ form.csrf_token }}
+			{{ form.title.label }}<br>
+			{{ form.title }}<br><br>
+			{{ form.body.label }}<br>
+			{{ form.body }}
+			<br>
+      <input id="submit" name="submit" type="submit" value="Submit">
+		</form>
+    {{ ckeditor.config(name='body') }}
 
 {% endblock %}

@@ -1,11 +1,21 @@
-from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
-# from data import Articles
+import os
+from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, Markup, send_from_directory
 from flask_mysqldb import MySQL
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+from flask_wtf import FlaskForm
+from wtforms import Form, StringField, TextAreaField, PasswordField, validators, SubmitField
+from wtforms.validators import DataRequired
 from passlib.hash import sha256_crypt
 from functools import wraps
-
+from flask_ckeditor import CKEditor, CKEditorField
+basedir = os.path.abspath(os.path.dirname(__file__))
+# flask-ckeditor configuration
 app = Flask(__name__)
+app.config['CKEDITOR_SERVE_LOCAL'] = True
+app.config['CKEDITOR_HEIGHT'] = 400
+app.config['CKEDITOR_FILE_UPLOADER'] = 'upload'
+app.config['UPLOADED_PATH'] = basedir + '/uploads'
+#init ckeditor
+ckeditor = CKEditor(app)
 #config MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
@@ -166,16 +176,20 @@ def dashboard():
     cur.close()
 
 #article form class
-class ArticleForm(Form):
+class ArticleForm(FlaskForm):
     title = StringField('Title', [validators.Length(min=1,max=200)])
-    body = TextAreaField('Body', [validators.Length(min=30)])
+    # body = TextAreaField('Body', [validators.Length(min=30)])
+    body = CKEditorField('Body', validators=[DataRequired()])
+
 
 #add article
 @app.route('/add_article',methods=['GET','POST'])
 @is_logged_in
 def add_article():
-    form = ArticleForm(request.form)
-    if request.method == 'POST' and form.validate():
+    form = ArticleForm()
+    # form = PostForm()
+
+    if form.validate_on_submit():
         title = form.title.data
         body = form.body.data
 
@@ -207,15 +221,15 @@ def edit_article(id):
 
     article = cur.fetchone()
     #get form
-    form = ArticleForm(request.form)
+    form = ArticleForm()
     #populate article from fields
     form.title.data = article['title']
     form.body.data = article['body']
-
-    if request.method == 'POST' and form.validate():
+    # app.logger.info(form.title.data)
+    if form.validate_on_submit():
         title = request.form['title']
         body = request.form['body']
-
+        # app.logger.info(form.title.data)
         #create cursor
         cur = mysql.connection.cursor()
         #execute
@@ -229,9 +243,25 @@ def edit_article(id):
 
         flash('Article updated','success')
 
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard')) ##
 
     return render_template('edit_article.html', form=form)
+
+@app.route('/files/<filename>')
+def files(filename):
+	path = app.config['UPLOADED_PATH']
+	return send_from_directory(path, filename)
+
+
+@app.route('/upload', methods=['POST'])
+@ckeditor.uploader
+def upload():
+	f = request.files.get('upload')
+	f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
+	url = url_for('files', filename=f.filename)
+	return url
+
+
 #delete article
 @app.route('/delete_article/<string:id>',methods=['POST'])
 @is_logged_in
