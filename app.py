@@ -31,7 +31,7 @@ def articles():
     cur = mysql.connection.cursor()
 
     #get articles
-    result = cur.execute("SELECT * FROM articles")
+    result = cur.execute("SELECT * FROM articles ORDER BY create_date DESC")
 
     articles = cur.fetchall()
 
@@ -153,7 +153,7 @@ def dashboard():
     cur = mysql.connection.cursor()
 
     #get articles
-    result = cur.execute("SELECT * FROM articles")
+    result = cur.execute("SELECT * FROM articles WHERE author=%s",[session['username']])
 
     articles = cur.fetchall()
 
