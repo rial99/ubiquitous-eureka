@@ -171,7 +171,7 @@ def dashboard():
         return render_template('dashboard.html',articles=articles)
     else:
         msg = 'NO ARTICLES FOUND'
-        return render_template('dashboard.html',articles=articles)
+        return render_template('dashboard.html',articles=articles,error=msg)
     #close connection
     cur.close()
 
